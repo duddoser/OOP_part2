@@ -1,0 +1,115 @@
+// TestGraph.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
+//
+#include <bits/stdc++.h>
+
+using namespace std;
+
+
+int main()
+{
+
+    vector<vector<int> > mat =
+            {
+                    { 0, 1, 1, 0, 0, 0, 1 }, // матрица смежности
+                    { 1, 0, 1, 1, 0, 0, 0 },
+                    { 1, 1, 0, 0, 0, 0, 0 },
+                    { 0, 1, 0, 0, 1, 0, 0 },
+                    { 0, 0, 0, 1, 0, 1, 0 },
+                    { 0, 0, 0, 0, 1, 0, 1 },
+                    { 1, 0, 0, 0, 0, 1, 0 }
+            };
+
+    vector <int> used(7, 0);
+    vector <int> dist(7, 0);
+
+    // bfs
+    queue<int> q; q.push(0);
+    while(!q.empty()) {
+        int cur_vertex = q.front();
+        q.pop();
+        for (int i = 0; i < 7; ++i) {
+            if (mat[cur_vertex][i] > 0 && used[i] != 2) {
+                q.push(i);
+                used[i] = 1;
+                dist[i] = dist[cur_vertex] + 1;
+            }
+        }
+        used[cur_vertex] = 2;
+    }
+
+    for (auto el: used) {
+        cout << el << "  ";
+    }
+    cout << endl;
+
+    for (auto el: dist) {
+        cout << el << "  ";
+    }
+    cout << endl << endl;
+
+    // dfs
+    vector <int> used2(7, 0);
+    vector <int> dist2(7, 0);
+    int step = 0;
+
+    stack<int> s; s.push(0);
+    while(!s.empty()) {
+        int cur_vertex = s.top();
+        s.pop();
+        for (int i = 6; i >= 0; i--) {
+            if (mat[cur_vertex][i] > 0 && used2[i] != 2) {
+                s.push(i);
+                used2[i] = 1;
+//                dist[i] = dist[cur_vertex] + 1;
+            }
+        }
+        if (used2[cur_vertex] != 2) dist2[cur_vertex] = step++;
+        used2[cur_vertex] = 2;
+    }
+
+    for (auto el: used2) {
+        cout << el << "  ";
+    }
+    cout << endl;
+
+    for (auto el: dist2) {
+        cout << el << "  ";
+    }
+    cout << endl;
+
+    // dijkstra
+    vector <int> dist3(7, 0);
+    while (!q.empty()) {
+        int vertex = q.front();
+        q.pop();
+        for (int i = 0; i < 7; ++i) {
+            if (mat[vertex][i] > 0 && dist3[vertex] + mat[vertex][i] < dist3[i]) {
+                dist3[i] = dist3[vertex] + mat[vertex][i];
+                q.push(i);
+            }
+        }
+    }
+
+
+    // ford falkerson
+    int source; int vertices = 7;
+    int target = 6;
+    queue<int> q1; q1.push(source);
+    vector<vector<int>> c, f;
+    vector<int> Flow, Link;
+    int CurVertex;
+    while (!q1.empty()) {
+        CurVertex = q1.front();
+        q1.pop();
+        // if (Link[target] = -1) break;
+        if (CurVertex == target) break;
+        for (int i = 0; i < vertices; ++i) {
+            if (c[CurVertex][i] - f[CurVertex][i] > 0 && ) {
+                q1.push(i);
+                Flow[i] = Flow[CurVertex] < c[CurVertex][i] - f[CurVertex][i] ? Flow[CurVertex] : c[CurVertex][i] - f[CurVertex][i];
+                Link[i] = CurVertex;
+            }
+        }
+    }
+    return 0;
+}
