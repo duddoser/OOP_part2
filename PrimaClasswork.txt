@@ -1,0 +1,92 @@
+// TestGraph.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
+//
+#include <bits/stdc++.h>
+using namespace std;
+
+int n = 12;
+vector<vector<int> > mat = {
+        { 0, 8, 2, 0, 5, 1, 7, 3, 5, 9, 3, 7 },
+        { 8, 0, 7, 5, 7, 1, 9, 1, 1, 6, 6, 9 },
+        { 2, 7, 0, 9, 3, 5, 1, 9, 1, 0, 8, 0 },
+        { 0, 5, 9, 0, 8, 8, 4, 0, 3, 5, 7, 8 },
+        { 5, 7, 3, 8, 0, 1, 7, 3, 0, 6, 8, 9 },
+        { 1, 1, 5, 8, 1, 0, 7, 0, 0, 8, 6, 9 },
+        { 7, 9, 1, 4, 7, 7, 0, 0, 7, 2, 5, 8 },
+        { 3, 1, 9, 0, 3, 0, 0, 0, 1, 8, 8, 1 },
+        { 5, 1, 1, 3, 0, 0, 7, 1, 0, 8, 6, 9 },
+        { 9, 6, 0, 5, 6, 8, 2, 8, 8, 0, 2, 7 },
+        { 3, 6, 8, 7, 8, 6, 5, 8, 6, 2, 0, 4 },
+        { 7, 9, 0, 8, 9, 9, 8, 1, 9, 7, 4, 0 }
+};
+
+
+class Edge {
+public:
+    int from, to, weight;
+    Edge(int from = -1, int to = -1, int weight = 0) : from(from), to(to), weight(weight) {}
+    Edge(const Edge &E)
+    {
+        from = E.from;
+        to = E.to;
+        weight = E.weight;
+    }
+    int operator<(Edge &E)
+    {
+        return (weight < E.weight);
+    }
+    friend ostream &operator<<(ostream &s, Edge &e);
+};
+
+ostream &operator<<(ostream &s, Edge &e)
+{
+    s << "From: " << e.from << ", to: " << e.to << ", weight: " << e.weight;
+    return s;
+}
+
+
+tuple<int, vector<Edge>> prima() {
+    int mst_weight = 0;
+    vector<Edge> edges;		//рассматриваемые ребра
+    vector<Edge> tree_edges;	//ребра в минимальном остове
+    vector<int> used(n, 0);
+
+    edges.emplace_back(0, 0, 0);     //Начнём с вершины 0. // фиктивная вершина
+
+    while (!edges.empty()) {
+        auto it = min_element(edges.begin(), edges.end());
+        int to = it->to;
+        int from = it->from;
+        int w = it->weight;
+        mst_weight += w;
+
+        edges.erase(it);
+
+        if (used[to]) continue;
+        used[to] = 1;
+
+        tree_edges.emplace_back(Edge(from, to, w));
+        for ( int i = 0; i < n ; i++ ) {
+            if ( mat[to][i] > 0 && !used[i] ) {
+                edges.emplace_back(Edge(to, i, mat[to][i]));
+            }
+        }
+    }
+
+    tuple<int, vector<Edge>> ans = make_tuple(mst_weight, tree_edges);
+    cout << mst_weight << endl;
+
+    return ans;
+}
+
+
+int main() {
+    // min spanning tree
+    tuple<int, vector<Edge>> mst_result = prima();
+    cout << "min spanning tree weight: " << get<0>(mst_result) << endl;
+    for ( int i = 1; i < get<1>(mst_result).size(); i++ ) {
+        cout << "\nEdge " << i << " ";
+        cout << get<1>(mst_result)[i];
+    }
+
+    return 0;
+}
