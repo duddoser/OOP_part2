@@ -1,0 +1,204 @@
+#include <bits/stdc++.h>
+
+using namespace std;
+
+void print_MST(vector<int> parent, vector<vector<int>> graph) {
+    cout << "MST:\nEdge \tWeight" << endl;
+    int weight = 0;
+    for (int i = 1; i < graph.size(); i++) {
+        weight += graph[i][parent[i]];
+        cout << parent[i] << " - " << i << " \t" << graph[i][parent[i]] << endl;
+    }
+    cout << "MST weight: " << weight << endl;
+
+}
+
+// поиск минимального остова алгоритмом Прима
+vector<vector<int>> prima(vector<vector<int>> graph)
+{
+    vector<int> parent(graph.size());
+    vector<int> min_edges(graph.size(), INT_MAX);
+    vector<bool> used(graph.size(), false);
+    vector<vector<int>> res(graph.size(), vector<int>(graph.size()));
+
+    min_edges[0] = 0;
+    parent[0] = -1;
+
+    for (int count = 0; count < graph.size() - 1; count++) {
+        int min = INT_MAX, min_index;
+
+        for (int v = 0; v < graph.size(); v++)
+            if (!used[v] && min_edges[v] < min)
+                min = min_edges[v], min_index = v;
+        used[min_index] = true;
+
+        for (int v = 0; v < graph.size(); v++)
+            if (graph[min_index][v] != 0 && !used[v] && graph[min_index][v] < min_edges[v])
+                parent[v] = min_index, min_edges[v] = graph[min_index][v];
+    }
+
+    print_MST(parent, graph);
+
+    for (int i = 0; i < graph.size(); i++)
+        for (int j = 0; j < graph.size(); j++)
+            res[i][j] = 0;
+
+    for (int i = 1; i < graph.size(); i++)
+    {
+        res[i][parent[i]] = graph[i][parent[i]];
+        res[parent[i]][i] = graph[parent[i]][i];
+    }
+
+    return res;
+}
+
+// поиск в глубину
+vector<int> dfs(vector<vector<int>>& graph)
+{
+    stack<int> s;
+    vector<int> used(graph.size(), 0);
+    vector<int> vertices;
+    s.push(0);
+    used[0] = 1;
+
+    while (!s.empty())
+    {
+        int v = s.top();
+        s.pop();
+        vertices.push_back(v);
+        for (int i = 0; i < graph.size(); i++)
+        {
+            if (graph[v][i] > 0 && used[i] == 0)
+            {
+                s.push(i);
+                used[i] = 1;
+            }
+        }
+    }
+    return vertices;
+}
+
+// поиск минимальных путей для вершины
+vector<int> bfs(vector<vector<int>>& graph, int start_vertex) {
+    queue<int> q;
+    vector<int> min_ways(graph.size(), INT_MAX);
+    q.push(start_vertex);
+    min_ways[start_vertex] = 0;
+
+    while (!q.empty())
+    {
+        int v = q.front();
+        q.pop();
+        for (int i = 0; i < graph.size(); i++)
+        {
+            if (graph[v][i] > 0 && min_ways[i] >= min_ways[v] + graph[v][i])
+            {
+                min_ways[i] = min_ways[v] + graph[v][i];
+                q.push(i);
+            }
+        }
+    }
+    return min_ways;
+}
+
+// функция подсчёта степени вершин в полученном дереве
+vector<int> verticesDegrees(vector<vector<int>> graph)
+{
+    queue<int> q;
+    vector<int> used(graph.size(), 0);
+    vector<int> vertices_degrees(graph.size(), 0);
+    q.push(0);
+    used[0] = 1;
+
+    while (!q.empty())
+    {
+        int v = q.front();
+        q.pop();
+        for (int i = 0; i < graph.size(); i++)
+        {
+            if (graph[v][i] > 0) vertices_degrees[v] += 1;
+            if (used[i] == 0)
+            {
+                used[i] = 1;
+                q.push(i);
+            }
+        }
+    }
+    return vertices_degrees;
+}
+
+// функция подсчета средней степени по всему дереву
+double TreeAverageDegree(vector<vector<int>> graph)
+{
+    vector<int> vertices_degrees = verticesDegrees(graph);
+    double s = 0;
+    for (int i = 0; i < vertices_degrees.size(); i++) s += vertices_degrees[i];
+    return s / graph.size();
+}
+
+int main()
+{
+    vector<vector<int> > Matrix = {
+            { 0, 8, 2, 0, 5, 1, 7, 3, 5, 9, 3, 7 },
+            { 8, 0, 7, 5, 7, 1, 9, 1, 1, 6, 6, 9 },
+            { 2, 7, 0, 9, 3, 5, 1, 9, 1, 0, 8, 0 },
+            { 0, 5, 9, 0, 8, 8, 4, 0, 3, 5, 7, 8 },
+            { 5, 7, 3, 8, 0, 1, 7, 3, 0, 6, 8, 9 },
+            { 1, 1, 5, 8, 1, 0, 7, 0, 0, 8, 6, 9 },
+            { 7, 9, 1, 4, 7, 7, 0, 0, 7, 2, 5, 8 },
+            { 3, 1, 9, 0, 3, 0, 0, 0, 1, 8, 8, 1 },
+            { 5, 1, 1, 3, 0, 0, 7, 1, 0, 8, 6, 9 },
+            { 9, 6, 0, 5, 6, 8, 2, 8, 8, 0, 2, 7 },
+            { 3, 6, 8, 7, 8, 6, 5, 8, 6, 2, 0, 4 },
+            { 7, 9, 0, 8, 9, 9, 8, 1, 9, 7, 4, 0 }
+    };
+
+    // минимальный остов
+    vector<vector<int>> MST = prima(Matrix);
+    cout << "MST:" << endl;
+    for (int i = 0; i < MST.size(); i++)
+    {
+        for (int j = 0; j < MST[i].size(); j++)
+            cout << MST[i][j] << '\t';
+        cout << endl;
+    }
+
+    // DFS для графа
+    vector<int> vertices_dfs = dfs(Matrix);
+    cout << "Enumeration of all vertices of the original graph:" << endl;
+    auto it = vertices_dfs.begin();
+    for (; it != vertices_dfs.end(); it++)
+        cout << *it << endl;
+
+    // DFS для минимального остова
+    vector<int> vertices_dfs_mst = dfs(MST);
+    cout << "Enumeration of all vertices of the minimum backbone:" << endl;
+    auto it_mst = vertices_dfs_mst.begin();
+    for (; it_mst != vertices_dfs_mst.end(); it_mst++)
+        cout << *it_mst << endl;
+
+    // Поиск минимальных путей для вершины 3 в минимальном остове
+    vector<int> ways_for_bfs5 = bfs(MST, 5);
+    cout << "Minimum paths for vertex 5:" << endl;
+    auto it_mw5 = ways_for_bfs5.begin();
+    for (int i = 0; it_mw5 != ways_for_bfs5.end(); i++, it_mw5++)
+        cout << i << '\t' << *it_mw5 << endl;
+
+    // Поиск минимальных путей для стартовой вершины в минимальном остове
+    vector<int> ways_for_0 = bfs(MST, 1);
+    cout << "Minimum paths for vertex 1:" << endl;
+    auto it_mw1 = ways_for_0.begin();
+    for (int i = 0; it_mw1 != ways_for_0.end(); i++, it_mw1++)
+        cout << i << '\t' << *it_mw1 << endl;
+
+    // Подсчет степеней вершин в минимальном остове
+    vector<int> vertices_degrees_mst = verticesDegrees(MST);
+    cout << "Degrees of vertices in the MST:" << endl;
+    auto it_vd = vertices_degrees_mst.begin();
+    for (int i = 0; it_vd != vertices_degrees_mst.end(); i++, it_vd++)
+        cout << i << '\t' << *it_vd << endl;
+
+    cout << "Average degree: " << TreeAverageDegree(MST);
+
+    return 0;
+}
